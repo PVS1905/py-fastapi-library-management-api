@@ -1,24 +1,26 @@
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-
+from typing import Sequence
 import schemas
 from db import models
 
 
 def get_all_books(
-        db: Session,
-        author_id: int | None = None,
-        skip: int | None = None,
-        limit: int | None = None,
-) -> list[models.Book]:
+    db: Session,
+    author_id: int | None = None,
+    skip: int = 0,
+    limit: int = 10,
+) -> Sequence[models.Book]:
 
-    query = db.query(models.Book)
-    if author_id is None:
+    query = select(models.Book)
+
+    if author_id is not None:
         query = query.where(models.Book.author_id == author_id)
-    query = query.limit(limit).offset(skip)
 
-    return list(db.scalars(query))
+    query = query.offset(skip).limit(limit)
+
+    return db.scalars(query).all()
 
 
 def get_author_by_id(
@@ -58,8 +60,8 @@ def create_book(
 
 def create_author(
     db: Session,
-    author: schemas.AuthorCreateSchema
-) -> models.Book:
+    author: schemas.AuthorSchemaBase
+) -> models.Author:
 
     db_author = models.Author(
         name=author.name,
@@ -72,11 +74,9 @@ def create_author(
     return db_author
 
 
-def get_authors_list(
-    db: Session,
-    skip: int | None = None,
-    limit: int | None = None,
-) -> list[models.Author]:
-    query = db.query(models.Author).offset(skip).limit(limit)
-
-    return list(db.scalars(query))
+def get_authors_list(db, skip: int, limit: int) -> list[models.Author]:
+    return db.scalars(
+        select(models.Author)
+        .offset(skip)
+        .limit(limit)
+    ).all()

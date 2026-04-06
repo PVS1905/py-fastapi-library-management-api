@@ -28,8 +28,11 @@ class AuthorSchemaBase(BaseModel):
         from_attributes = True
 
 
-class AuthorCreateSchema(AuthorSchemaBase):
-    pass
+class AuthorSchema(AuthorSchemaBase):
+    id: int
+
+    class Config:
+        from_attributes = True
 
 
 class AuthorListSchema(AuthorSchemaBase):

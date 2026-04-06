@@ -1,13 +1,16 @@
 from typing import Annotated, Generator
-from sqlalchemy import select
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import Depends
 from sqlalchemy.orm import Session
 import crud
 import schemas
 from db.database import SessionLocal
-from db.models import Book
+from fastapi import FastAPI
+from db.database import engine
+from db.models import Base
+
 
 app = FastAPI()
+Base.metadata.create_all(bind=engine)
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -51,9 +54,9 @@ def get_authors(
     return crud.get_authors_list(db=db, skip=skip, limit=limit)
 
 
-@app.post("/authors/", response_model=schemas.AuthorSchemaBase)
+@app.post("/authors/", response_model=schemas.AuthorSchema)
 def create_author_route(
-    author: schemas.AuthorCreateSchema,
+    author: schemas.AuthorSchemaBase,
     db: Session = Depends(get_db)
 ):
     return crud.create_author(db=db, author=author)
